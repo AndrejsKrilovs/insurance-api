@@ -81,11 +81,6 @@ public class PolicyAPI {
     @DeleteMapping(path = "{policy}")
     public void deletePolicy(@PathVariable String policy) {
         final Map<String, Object> policyToDelete = getPolice(policy);
-        data.remove(
-                data.stream()
-                        .filter(item -> item.get(POLICY_PROPERTY).equals(policyToDelete))
-                        .findFirst()
-                        .orElseThrow(PolicyNotFoundException::new)
-        );
+        data.remove(policyToDelete);
     }
 }
