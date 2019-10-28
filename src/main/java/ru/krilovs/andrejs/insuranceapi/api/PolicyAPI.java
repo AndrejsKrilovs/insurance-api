@@ -23,7 +23,7 @@ public class PolicyAPI {
     }
 
     private Map<String, Object> getPolice(@PathVariable String policy) {
-        return data.stream().map(v -> ((Map) v.get(POLICY_PROPERTY)))
+        return data.stream().map(v -> ((Map<String, Object>) v.get(POLICY_PROPERTY)))
                 .filter(item -> String.valueOf(item.get("id")).equalsIgnoreCase(policy))
                 .findFirst()
                 .orElseThrow(PolicyNotFoundException::new);
@@ -41,7 +41,7 @@ public class PolicyAPI {
 
     @PostMapping
     public Map<String, Object> createPolicy(@RequestBody Map<String, Object> policyBody) {
-       final Map<String, Object> item = (Map) policyBody.get(POLICY_PROPERTY);
+       final Map<String, Object> item = (Map<String, Object>) policyBody.get(POLICY_PROPERTY);
 
        item.put("id", String.format("LV19-07-100000-%d", counter++));
        item.put("premium", Math.random());
@@ -53,7 +53,7 @@ public class PolicyAPI {
     @PutMapping(path = "{policy}")
     public Map<String, Object> updatePolicy(@PathVariable String policy, @RequestBody Map<String, Object> policyBody) {
         final Map<String, Object> policyItem = getPolice(policy);
-        final Map<String, Object> newPolicyItem = (Map) policyBody.get(POLICY_PROPERTY);
+        final Map<String, Object> newPolicyItem = (Map<String, Object>) policyBody.get(POLICY_PROPERTY);
 
         policyItem.putAll(newPolicyItem);
         policyItem.put("id", policyItem.get("id"));
