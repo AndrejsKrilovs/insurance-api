@@ -6,9 +6,8 @@ import ru.krilovs.andrejs.insuranceapi.exception.PolicyNotFoundException;
 
 import javax.annotation.PostConstruct;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/policy")
@@ -22,11 +21,24 @@ public class PolicyAPI {
            counter = data.size();
     }
 
-    private Map<String, Object> getPolice(@PathVariable String policy) {
-        return data.stream().map(v -> ((Map<String, Object>) v.get(POLICY_PROPERTY)))
-                .filter(item -> String.valueOf(item.get("id")).equalsIgnoreCase(policy))
+    private Map<String, Object> getPolice(final String policy) {
+        return data.stream()
+                .filter(item -> String.valueOf(
+                        ((Map<String, Object>)item.get(POLICY_PROPERTY)).get("id")
+                ).equalsIgnoreCase(policy))
                 .findFirst()
                 .orElseThrow(PolicyNotFoundException::new);
+    }
+
+    private Map<String, Object> sortData(final Map<String, Object> unsortedMap) {
+        return unsortedMap.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
     }
 
     @GetMapping
@@ -41,25 +53,29 @@ public class PolicyAPI {
 
     @PostMapping
     public Map<String, Object> createPolicy(@RequestBody Map<String, Object> policyBody) {
-       final Map<String, Object> item = (Map<String, Object>) policyBody.get(POLICY_PROPERTY);
+        policyBody.put("id", String.format("LV19-07-100000-%d", counter++));
+        policyBody.put("premium", Math.random());
 
-       item.put("id", String.format("LV19-07-100000-%d", counter++));
-       item.put("premium", Math.random());
-       data.add(policyBody);
+        final Map<String, Object> sortedData = new LinkedHashMap<>(){{
+            put(POLICY_PROPERTY, sortData(policyBody));
+        }};
 
-       return policyBody;
+        data.add(sortedData);
+        return sortedData;
     }
 
     @PutMapping(path = "{policy}")
     public Map<String, Object> updatePolicy(@PathVariable String policy, @RequestBody Map<String, Object> policyBody) {
         final Map<String, Object> policyItem = getPolice(policy);
-        final Map<String, Object> newPolicyItem = (Map<String, Object>) policyBody.get(POLICY_PROPERTY);
+        policyBody.put("id", ((Map<String, Object>)policyItem.get(POLICY_PROPERTY)).get("id"));
+        policyBody.put("premium", Math.random());
 
-        policyItem.putAll(newPolicyItem);
-        policyItem.put("id", policyItem.get("id"));
-        policyItem.put("premium", Math.random());
+        final Map<String, Object> sortedData = new LinkedHashMap<>(){{
+            put(POLICY_PROPERTY, sortData(policyBody));
+        }};
 
-        return policyItem;
+        policyItem.putAll(sortedData);
+        return sortedData;
     }
 
     @DeleteMapping(path = "{policy}")
