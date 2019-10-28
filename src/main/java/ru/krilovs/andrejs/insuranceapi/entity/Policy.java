@@ -1,17 +1,21 @@
 package ru.krilovs.andrejs.insuranceapi.entity;
 
+import java.util.List;
+
 public class Policy {
     private String id;
     private Status status;
     private Double premium;
+    private List<PolicyObject> policyObjects;
 
-    public Policy(String id, Status status, Double premium) {
+    public Policy() {
+    }
+
+    public Policy(String id, Status status, Double premium, List<PolicyObject> policyObjects) {
         this.id = id;
         this.status = status;
         this.premium = premium;
-    }
-
-    public Policy() {
+        this.policyObjects = policyObjects;
     }
 
     public String getId() {
@@ -36,5 +40,13 @@ public class Policy {
 
     public void setPremium(Double premium) {
         this.premium = premium;
+    }
+
+    public List<PolicyObject> getPolicyObjects() {
+        return policyObjects;
+    }
+
+    public void setPolicyObjects(List<PolicyObject> policyObjects) {
+        this.policyObjects = policyObjects;
     }
 }
