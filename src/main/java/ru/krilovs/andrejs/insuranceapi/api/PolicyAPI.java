@@ -2,11 +2,15 @@ package ru.krilovs.andrejs.insuranceapi.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import ru.krilovs.andrejs.insuranceapi.exception.InvalidPoliceStructureException;
 import ru.krilovs.andrejs.insuranceapi.exception.PolicyNotFoundException;
+import ru.krilovs.andrejs.insuranceapi.service.DataValidationService;
+import ru.krilovs.andrejs.insuranceapi.service.StructureValidationService;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/policy")
@@ -14,7 +18,10 @@ public class PolicyAPI {
     private List<Map<String, Object>> data = new ArrayList<>();
 
     @Autowired
-    private Validation validation;
+    private StructureValidationService structureValidationService;
+
+    @Autowired
+    private DataValidationService dataValidation;
 
     private Map<String, Object> getPolice(final String policy) {
         return data.stream()
@@ -23,17 +30,6 @@ public class PolicyAPI {
                 ).equalsIgnoreCase(policy))
                 .findFirst()
                 .orElseThrow(PolicyNotFoundException::new);
-    }
-
-    private Map<String, Object> sortData(final Map<String, Object> unsortedMap) {
-        return unsortedMap.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (oldValue, newValue) -> oldValue,
-                        LinkedHashMap::new
-                ));
     }
 
     @GetMapping
@@ -47,42 +43,40 @@ public class PolicyAPI {
     }
 
     @PostMapping
-    public Map<String, Object> createPolicy(@RequestBody Map<String, Object> policyBody) {
+    public Map<String, Object> createPolicy(@RequestBody Map<String, Object> policyBody) throws InvalidPoliceStructureException {
         policyBody.put("id", String.format("LV19-07-100000-%d", data.size()+1));
         policyBody.put("premium", Math.random());
 
-        final Map<String, Object> sortedPolicy = sortData(policyBody);
-        if(validation.policyStructureValidation(sortedPolicy)) {
+        if(!structureValidationService.policyStructureValidation(policyBody))
+            throw new InvalidPoliceStructureException();
+        else {
             final Map<String, Object> sortedData = new LinkedHashMap<>() {{
-                put(Properties.POLICY_PROPERTY, sortedPolicy);
+                put(Properties.POLICY_PROPERTY, policyBody);
             }};
 
             data.add(sortedData);
             return sortedData;
-        } else
-            return new LinkedHashMap<>(){{
-                put("error", "Invalid policy!");
-            }};
+        }
     }
 
     @PutMapping(path = "{policy}")
-    public Map<String, Object> updatePolicy(@PathVariable String policy, @RequestBody Map<String, Object> policyBody) {
+    public Map<String, Object> updatePolicy(@PathVariable String policy, @RequestBody Map<String, Object> policyBody)
+            throws InvalidPoliceStructureException {
+
         final Map<String, Object> policyItem = getPolice(policy);
         policyBody.put("id", ((Map<String, Object>)policyItem.get(Properties.POLICY_PROPERTY)).get("id"));
         policyBody.put("premium", Math.random());
 
-        final Map<String, Object> sortedPolicy = sortData(policyBody);
-        if(validation.policyStructureValidation(sortedPolicy)) {
+        if(!structureValidationService.policyStructureValidation(policyBody))
+            throw new InvalidPoliceStructureException();
+        else {
             final Map<String, Object> sortedData = new LinkedHashMap<>(){{
-                put(Properties.POLICY_PROPERTY, sortedPolicy);
+                put(Properties.POLICY_PROPERTY, policyBody);
             }};
 
             policyItem.putAll(sortedData);
             return sortedData;
-        } else
-            return new LinkedHashMap<>(){{
-                put("error", "Invalid policy!");
-            }};
+        }
     }
 
     @DeleteMapping(path = "{policy}")

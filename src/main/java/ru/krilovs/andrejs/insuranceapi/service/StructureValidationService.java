@@ -1,6 +1,7 @@
-package ru.krilovs.andrejs.insuranceapi.api;
+package ru.krilovs.andrejs.insuranceapi.service;
 
 import org.springframework.stereotype.Service;
+import ru.krilovs.andrejs.insuranceapi.api.Properties;
 import ru.krilovs.andrejs.insuranceapi.exception.InvalidPoliceStructureException;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Service
-public class Validation {
+public class StructureValidationService {
     private boolean keyValidation(final Set<String> keysToCompare, final Set<String> originalKeys) {
         return keysToCompare.equals(originalKeys);
     }
