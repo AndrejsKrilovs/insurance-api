@@ -1,6 +1,7 @@
 package ru.krilovs.andrejs.insuranceapi.api;
 
 import org.springframework.stereotype.Service;
+import ru.krilovs.andrejs.insuranceapi.exception.InvalidPoliceStructureException;
 
 import java.util.List;
 import java.util.Map;
@@ -20,8 +21,15 @@ public class Validation {
 
     public boolean policyStructureValidation(final Map<String, Object> policy) {
         final List<Map<String, Object>> policyObjects = (List<Map<String, Object>>) policy.get("policyObjects");
-        System.out.println(policyObjects);
+        final List<Map<String, Object>> policySubObjects = policyObjects
+                .stream()
+                .map(item -> item.get("policySubObjects"))
+                .map(item -> (List<Map<String, Object>>)item)
+                .findFirst()
+                .orElseThrow(InvalidPoliceStructureException::new);
+
         return keyValidation(policy.keySet(), Properties.ORIGINAL_POLICY_KEYS) &&
-                hasSubObjects(policyObjects, Properties.ORIGINAL_POLICY_OBJECT_KEYS);
+                hasSubObjects(policyObjects, Properties.ORIGINAL_POLICY_OBJECT_KEYS) &&
+                hasSubObjects(policySubObjects, Properties.ORIGINAL_POLICY_SUB_OBJECT_KEYS);
     }
 }
