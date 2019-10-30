@@ -1,12 +1,15 @@
 package ru.krilovs.andrejs.insuranceapi.service;
 
 import org.springframework.stereotype.Service;
+
 import ru.krilovs.andrejs.insuranceapi.api.Properties;
 import ru.krilovs.andrejs.insuranceapi.exception.InvalidPoliceStructureException;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class StructureValidationService {
@@ -20,7 +23,20 @@ public class StructureValidationService {
                 .allMatch(item -> item.equals(originalKeys));
     }
 
-    public boolean policyStructureValidation(final Map<String, Object> policy) {
+    private Map<String, Object> sortData(final Map<String, Object> unsortedMap) {
+        return unsortedMap.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
+    }
+
+    public Map<String, Object> generatePolicyStructure(final Map<String, Object> policy)
+            throws InvalidPoliceStructureException{
+
         final List<Map<String, Object>> policyObjects = (List<Map<String, Object>>) policy.get("policyObjects");
         final List<Map<String, Object>> policySubObjects = policyObjects
                 .stream()
@@ -29,8 +45,12 @@ public class StructureValidationService {
                 .findFirst()
                 .orElseThrow(InvalidPoliceStructureException::new);
 
-        return keyValidation(policy.keySet(), Properties.ORIGINAL_POLICY_KEYS) &&
+        if(keyValidation(policy.keySet(), Properties.ORIGINAL_POLICY_KEYS) &&
                 hasSubObjects(policyObjects, Properties.ORIGINAL_POLICY_OBJECT_KEYS) &&
-                hasSubObjects(policySubObjects, Properties.ORIGINAL_POLICY_SUB_OBJECT_KEYS);
+                hasSubObjects(policySubObjects, Properties.ORIGINAL_POLICY_SUB_OBJECT_KEYS)) {
+
+            return sortData(policy);
+        } else
+            throw new InvalidPoliceStructureException();
     }
 }

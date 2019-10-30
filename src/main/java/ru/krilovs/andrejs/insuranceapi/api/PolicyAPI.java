@@ -2,7 +2,7 @@ package ru.krilovs.andrejs.insuranceapi.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.krilovs.andrejs.insuranceapi.exception.InvalidPoliceStructureException;
+
 import ru.krilovs.andrejs.insuranceapi.exception.PolicyNotFoundException;
 import ru.krilovs.andrejs.insuranceapi.service.DataValidationService;
 import ru.krilovs.andrejs.insuranceapi.service.StructureValidationService;
@@ -43,40 +43,30 @@ public class PolicyAPI {
     }
 
     @PostMapping
-    public Map<String, Object> createPolicy(@RequestBody Map<String, Object> policyBody) throws InvalidPoliceStructureException {
+    public Map<String, Object> createPolicy(@RequestBody Map<String, Object> policyBody) {
         policyBody.put("id", String.format("LV19-07-100000-%d", data.size()+1));
         policyBody.put("premium", Math.random());
 
-        if(!structureValidationService.policyStructureValidation(policyBody))
-            throw new InvalidPoliceStructureException();
-        else {
-            final Map<String, Object> sortedData = new LinkedHashMap<>() {{
-                put(Properties.POLICY_PROPERTY, policyBody);
-            }};
+        final Map<String, Object> sortedData = new LinkedHashMap<>() {{
+            put(Properties.POLICY_PROPERTY, structureValidationService.generatePolicyStructure(policyBody));
+        }};
 
-            data.add(sortedData);
-            return sortedData;
-        }
+        data.add(sortedData);
+        return sortedData;
     }
 
     @PutMapping(path = "{policy}")
-    public Map<String, Object> updatePolicy(@PathVariable String policy, @RequestBody Map<String, Object> policyBody)
-            throws InvalidPoliceStructureException {
-
+    public Map<String, Object> updatePolicy(@PathVariable String policy, @RequestBody Map<String, Object> policyBody) {
         final Map<String, Object> policyItem = getPolice(policy);
         policyBody.put("id", ((Map<String, Object>)policyItem.get(Properties.POLICY_PROPERTY)).get("id"));
         policyBody.put("premium", Math.random());
 
-        if(!structureValidationService.policyStructureValidation(policyBody))
-            throw new InvalidPoliceStructureException();
-        else {
-            final Map<String, Object> sortedData = new LinkedHashMap<>(){{
-                put(Properties.POLICY_PROPERTY, policyBody);
-            }};
+        final Map<String, Object> sortedData = new LinkedHashMap<>(){{
+            put(Properties.POLICY_PROPERTY, structureValidationService.generatePolicyStructure(policyBody));
+        }};
 
-            policyItem.putAll(sortedData);
-            return sortedData;
-        }
+        policyItem.putAll(sortedData);
+        return sortedData;
     }
 
     @DeleteMapping(path = "{policy}")
