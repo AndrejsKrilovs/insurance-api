@@ -7,7 +7,7 @@ import ru.krilovs.andrejs.insuranceapi.entity.*;
 import java.util.stream.Stream;
 
 @Service
-public class ValidationAPI {
+public class ValidationService {
     private boolean validateSubObject(final PolicySubObject subObject) {
         return !subObject.getName().isBlank() &&
                 subObject.getInsuredSum() > 0 &&

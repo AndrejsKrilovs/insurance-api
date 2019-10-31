@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/policy")
-public class PolicyAPI {
+public class PolicyController {
     private List<Policy> data = new ArrayList<>();
 
     @Autowired
-    private ValidationAPI validation;
+    private ValidationService validation;
 
     private Double calculatePremium(final Policy policy) {
         return policy.getPolicyObjects().stream()
