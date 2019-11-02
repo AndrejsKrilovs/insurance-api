@@ -1,80 +1,92 @@
 package ru.krilovs.andrejs.insuranceapi.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import ru.krilovs.andrejs.insuranceapi.entity.Policy;
-import ru.krilovs.andrejs.insuranceapi.exception.InvalidPolicyDataException;
-import ru.krilovs.andrejs.insuranceapi.exception.PolicyNotFoundException;
+import ru.krilovs.andrejs.insuranceapi.service.PolicyService;
+import ru.krilovs.andrejs.insuranceapi.validators.PolicyValidator;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * @author Andrejs Krilovs
+ * @author Sergei Visotsky
+ */
 @RestController
-@RequestMapping(path = "/policy")
+@RequestMapping(value = "/policy")
 public class PolicyController {
-    private List<Policy> data = new ArrayList<>();
+
+    private final PolicyValidator policyValidator;
+    private final PolicyService policyService;
 
     @Autowired
-    private ValidationService validation;
-
-    private Double calculatePremium(final Policy policy) {
-        return policy.getPolicyObjects().stream()
-                .map(item -> item.getSubObjects())
-                .findAny()
-                .get()
-                .stream()
-                .map(item -> item.getInsuredSum())
-                .collect(Collectors.summingDouble(Double::doubleValue));
-    }
-
-    private Policy getPolicy(final String policy) {
-        return data.stream()
-                .filter(item -> item.getPolicyNumber().equalsIgnoreCase(policy))
-                .findFirst()
-                .orElseThrow(PolicyNotFoundException::new);
+    public PolicyController(PolicyValidator policyValidator, PolicyService policyService) {
+        this.policyValidator = policyValidator;
+        this.policyService = policyService;
     }
 
     @GetMapping
-    public List<Policy> policyList() {
-        return data;
+    public ResponseEntity<List<Policy>> policyList() {
+        List<Policy> allPolicies = policyService.getAllPolicies();
+        return new ResponseEntity<>(allPolicies, HttpStatus.OK);
     }
 
-    @GetMapping(path = "{policy}")
-    public Policy showPolicy(@PathVariable String policy) {
-        return getPolicy(policy);
+    @GetMapping(value = "{policy}")
+    public ResponseEntity<Policy> showPolicy(@PathVariable String policy) {
+        Policy policyFound = policyService.getPolicy(policy);
+        if (policyFound != null) {
+            return new ResponseEntity<>(policyFound, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping
-    public Policy createPolicy(@RequestBody Policy policyBody) throws InvalidPolicyDataException {
-        policyBody.setPolicyNumber(String.format("LV19-07-100000-%d", data.size()+1));
-        policyBody.setPolicyPremium(calculatePremium(policyBody));
+    public ResponseEntity<Policy> createPolicy(@RequestBody Policy policyBody) {
+        // TODO: @svisotsky to @akrilovs: Move this logic to the service classes
+        List<Policy> allPolicies = policyService.getAllPolicies();
+        policyBody.setPolicyNumber(String.format("LV19-07-100000-%d", allPolicies.size() + 1));
 
-        if(validation.validatePolice(policyBody)) {
-            data.add(policyBody);
-            return policyBody;
-        } else
-            throw new InvalidPolicyDataException();
+        // TODO: @svisotsky to @akrilovs: Move this logic to the service classes
+        Double policyPremium = policyService.calculatePremium(policyBody);
+        policyBody.setPolicyPremium(policyPremium);
+
+        if (policyValidator.validate(policyBody)) {
+            allPolicies.add(policyBody);
+            return new ResponseEntity<>(policyBody, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
     }
 
-    @PutMapping(path = "{policy}")
-    public Policy updatePolicy(@PathVariable String policy, @RequestBody Policy policyBody)
-            throws InvalidPolicyDataException {
+    @PutMapping(value = "{policy}")
+    public ResponseEntity<Policy> updatePolicy(@PathVariable String policy, @RequestBody Policy policyBody) {
 
-        final Policy policyItem = getPolicy(policy);
+        // TODO: @svisotsky to @akrilovs: Move this logic to the service classes
+        List<Policy> allPolicies = policyService.getAllPolicies();
+
+        // TODO: @svisotsky to @akrilovs: Move this logic to the service classes
+        Policy policyItem = policyService.getPolicy(policy);
         policyBody.setPolicyNumber(policyItem.getPolicyNumber());
-        policyBody.setPolicyPremium(calculatePremium(policyBody));
+        // TODO: @svisotsky to @akrilovs: Move this logic to the service classes
+        Double policyPremium = policyService.calculatePremium(policyBody);
+        policyBody.setPolicyPremium(policyPremium);
 
-        if(validation.validatePolice(policyBody)) {
-            data.set(data.indexOf(policyItem), policyBody);
-            return policyBody;
-        } else
-            throw new InvalidPolicyDataException();
+        if (policyValidator.validate(policyBody)) {
+            allPolicies.set(allPolicies.indexOf(policyItem), policyBody);
+            return new ResponseEntity<>(policyBody, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
-    @DeleteMapping(path = "{policy}")
+    @DeleteMapping(value = "{policy}")
     public void deletePolicy(@PathVariable String policy) {
-        data.remove(getPolicy(policy));
+        List<Policy> policies = policyService.getAllPolicies();
+        Policy policyFound = policyService.getPolicy(policy);
+        policies.remove(policyFound);
     }
 }

@@ -1,12 +1,27 @@
 package ru.krilovs.andrejs.insuranceapi.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+/**
+ * TODO: @svisotsky to @akrilovs: Revisit whether this exception truly needs or {@link RuntimeException} is enough
+ */
+public class PolicyNotFoundException extends RuntimeException {
 
-@ResponseStatus(value = HttpStatus.NOT_FOUND)
-public final class PolicyNotFoundException extends RuntimeException {
-    @Override
-    public String getMessage() {
-        return "Policy not found!";
+    public PolicyNotFoundException() {
+        super();
+    }
+
+    public PolicyNotFoundException(String message) {
+        super(message);
+    }
+
+    public PolicyNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public PolicyNotFoundException(Throwable cause) {
+        super(cause);
+    }
+
+    protected PolicyNotFoundException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }
