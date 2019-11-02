@@ -25,26 +25,26 @@ public class PolicyServiceTest {
     private final RestTemplate restTemplate = new RestTemplate();
     private Policy policy;
     private PolicyObject policyObject;
-    private PolicySubObject policySubObject1;
-    private PolicySubObject policySubObject2;
+    private PolicySubObject fireSubObject;
+    private PolicySubObject waterSubObject;
 
     @Before
     public void init() {
         policy = new Policy();
         policyObject = new PolicyObject();
-        policySubObject1 = new PolicySubObject();
-        policySubObject2 = new PolicySubObject();
+        fireSubObject = new PolicySubObject();
+        waterSubObject = new PolicySubObject();
 
-        policySubObject1.setName("Sub object 1");
-        policySubObject1.setInsuredSum(Double.valueOf(45.01));
-        policySubObject1.setRiskType(RiskType.FIRE);
+        fireSubObject.setName("Sub object 1");
+        fireSubObject.setInsuredSum(Double.valueOf(1));
+        fireSubObject.setRiskType(RiskType.FIRE);
 
-        policySubObject2.setName("Sub object 1");
-        policySubObject2.setInsuredSum(Double.valueOf(54.99));
-        policySubObject2.setRiskType(RiskType.WATER);
+        waterSubObject.setName("Sub object 1");
+        waterSubObject.setInsuredSum(Double.valueOf(1));
+        waterSubObject.setRiskType(RiskType.WATER);
 
         policyObject.setName("Object");
-        policyObject.setSubObjects(List.of(policySubObject1, policySubObject2));
+        policyObject.setSubObjects(List.of(fireSubObject, waterSubObject));
 
         policy.setUserName("Test user");
         policy.setPolicyStatus(Status.APPROVE);
@@ -56,14 +56,14 @@ public class PolicyServiceTest {
         final ResponseEntity<Policy> result = restTemplate
                 .postForEntity("http://localhost:8080/policy", policy, Policy.class);
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(Double.valueOf(100), result.getBody().getPolicyPremium());
+        assertEquals(Double.valueOf(0.113), result.getBody().getPolicyPremium());
     }
 
     @Test
     public void putPoliceTest() {
         policy.setUserName("Changed user");
-        policySubObject2.setInsuredSum(Double.valueOf(100));
-        policySubObject1.setRiskType(RiskType.FIRE);
+        waterSubObject.setInsuredSum(Double.valueOf(10));
+        fireSubObject.setRiskType(RiskType.WATER);
         final ResponseEntity<Policy> result = restTemplate
                 .exchange(
                         "http://localhost:8080/policy/LV19-07-100000-1",
@@ -73,7 +73,7 @@ public class PolicyServiceTest {
                 );
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals("Changed user", result.getBody().getUserName());
-        assertEquals(Double.valueOf(145.01), result.getBody().getPolicyPremium());
+        assertEquals(Double.valueOf(0.6), result.getBody().getPolicyPremium());
     }
 
     @Test
