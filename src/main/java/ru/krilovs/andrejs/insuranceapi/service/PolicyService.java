@@ -15,4 +15,6 @@ public interface PolicyService {
     Policy getPolicy(String policy);
 
     Double calculatePremium(Policy policy);
+
+    Policy updatePolicyPrimaryData(Policy policy, String policyNumber, Double premium);
 }

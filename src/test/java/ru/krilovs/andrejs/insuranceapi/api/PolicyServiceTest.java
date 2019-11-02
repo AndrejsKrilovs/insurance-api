@@ -9,7 +9,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,7 +19,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 @SpringBootTest
-@RunWith(SpringRunner.class)
+@RunWith(value = SpringRunner.class)
 public class PolicyServiceTest {
     // TODO: @svisotsky to @akrilovs Please use TestRestTemplate
     private final RestTemplate restTemplate = new RestTemplate();

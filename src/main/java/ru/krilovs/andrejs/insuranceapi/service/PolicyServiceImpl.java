@@ -1,12 +1,13 @@
 package ru.krilovs.andrejs.insuranceapi.service;
 
 import org.springframework.stereotype.Service;
+
 import ru.krilovs.andrejs.insuranceapi.entity.Policy;
-import ru.krilovs.andrejs.insuranceapi.exception.PolicyNotFoundException;
+import ru.krilovs.andrejs.insuranceapi.entity.PolicyObject;
+import ru.krilovs.andrejs.insuranceapi.entity.PolicySubObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Sergei Visotsky
@@ -14,8 +15,11 @@ import java.util.stream.Collectors;
  */
 @Service
 public class PolicyServiceImpl implements PolicyService {
+    private final List<Policy> data;
 
-    private List<Policy> data = new ArrayList<>();
+    public PolicyServiceImpl() {
+        data = new ArrayList<>();
+    }
 
     @Override
     public List<Policy> getAllPolicies() {
@@ -27,17 +31,31 @@ public class PolicyServiceImpl implements PolicyService {
         return data.stream()
                 .filter(item -> item.getPolicyNumber().equalsIgnoreCase(policy))
                 .findFirst()
-                .orElseThrow(PolicyNotFoundException::new);
+                .orElseThrow(RuntimeException::new);
     }
 
     @Override
     public Double calculatePremium(Policy policy) {
         return policy.getPolicyObjects().stream()
-                .map(item -> item.getSubObjects())
+                .map(PolicyObject::getSubObjects)
                 .findAny()
-                .get()
+                .orElseThrow(RuntimeException::new)
                 .stream()
-                .map(item -> item.getInsuredSum())
-                .collect(Collectors.summingDouble(Double::doubleValue));
+                .map(PolicySubObject::getInsuredSum)
+                .mapToDouble(Double::doubleValue)
+                .sum();
+    }
+
+    @Override
+    public Policy updatePolicyPrimaryData(Policy policy, String policyNumber, Double premium) {
+        if(!policyNumber.isBlank()) {
+            policy.setPolicyNumber(policyNumber);
+        }
+
+        if(premium != null && premium > 0 && !premium.equals(policy.getPolicyPremium())) {
+            policy.setPolicyPremium(premium);
+        }
+
+        return policy;
     }
 }

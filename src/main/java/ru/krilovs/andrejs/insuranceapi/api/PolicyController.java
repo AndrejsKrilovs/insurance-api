@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import ru.krilovs.andrejs.insuranceapi.entity.Policy;
 import ru.krilovs.andrejs.insuranceapi.service.PolicyService;
 import ru.krilovs.andrejs.insuranceapi.validators.PolicyValidator;
@@ -17,7 +18,6 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/policy")
 public class PolicyController {
-
     private final PolicyValidator policyValidator;
     private final PolicyService policyService;
 
@@ -45,39 +45,32 @@ public class PolicyController {
 
     @PostMapping
     public ResponseEntity<Policy> createPolicy(@RequestBody Policy policyBody) {
-        // TODO: @svisotsky to @akrilovs: Move this logic to the service classes
         List<Policy> allPolicies = policyService.getAllPolicies();
-        policyBody.setPolicyNumber(String.format("LV19-07-100000-%d", allPolicies.size() + 1));
-
-        // TODO: @svisotsky to @akrilovs: Move this logic to the service classes
-        Double policyPremium = policyService.calculatePremium(policyBody);
-        policyBody.setPolicyPremium(policyPremium);
-
-        if (policyValidator.validate(policyBody)) {
-            allPolicies.add(policyBody);
-            return new ResponseEntity<>(policyBody, HttpStatus.OK);
+        Policy updatedPolicyPrimaryData = policyService.updatePolicyPrimaryData(
+                policyBody,
+                String.format("LV19-07-100000-%d", allPolicies.size() + 1),
+                policyService.calculatePremium(policyBody)
+        );
+        if (policyValidator.validate(updatedPolicyPrimaryData)) {
+            allPolicies.add(updatedPolicyPrimaryData);
+            return new ResponseEntity<>(updatedPolicyPrimaryData, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
     }
 
     @PutMapping(value = "{policy}")
     public ResponseEntity<Policy> updatePolicy(@PathVariable String policy, @RequestBody Policy policyBody) {
-
-        // TODO: @svisotsky to @akrilovs: Move this logic to the service classes
         List<Policy> allPolicies = policyService.getAllPolicies();
-
-        // TODO: @svisotsky to @akrilovs: Move this logic to the service classes
         Policy policyItem = policyService.getPolicy(policy);
-        policyBody.setPolicyNumber(policyItem.getPolicyNumber());
-        // TODO: @svisotsky to @akrilovs: Move this logic to the service classes
-        Double policyPremium = policyService.calculatePremium(policyBody);
-        policyBody.setPolicyPremium(policyPremium);
-
-        if (policyValidator.validate(policyBody)) {
-            allPolicies.set(allPolicies.indexOf(policyItem), policyBody);
-            return new ResponseEntity<>(policyBody, HttpStatus.OK);
+        Policy updatedPolicyPrimaryData = policyService.updatePolicyPrimaryData(
+                policyBody,
+                policyItem.getPolicyNumber(),
+                policyService.calculatePremium(policyBody)
+        );
+        if (policyValidator.validate(updatedPolicyPrimaryData)) {
+            allPolicies.set(allPolicies.indexOf(policyItem), updatedPolicyPrimaryData);
+            return new ResponseEntity<>(updatedPolicyPrimaryData, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
