@@ -52,9 +52,10 @@ public class PolicyServiceTest {
 
     @Test
     public void postPolicyTest() {
-        final ResponseEntity<String> result = restTemplate
-                .postForEntity("http://localhost:8080/policy", policy, String.class);
+        final ResponseEntity<Policy> result = restTemplate
+                .postForEntity("http://localhost:8080/policy", policy, Policy.class);
         assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(Double.valueOf(100), result.getBody().getPolicyPremium());
     }
 
     @Test
@@ -62,14 +63,16 @@ public class PolicyServiceTest {
         policy.setUserName("Changed user");
         policySubObject2.setInsuredSum(Double.valueOf(100));
         policySubObject1.setRiskType(RiskType.FIRE);
-        final ResponseEntity<String> result = restTemplate
+        final ResponseEntity<Policy> result = restTemplate
                 .exchange(
                         "http://localhost:8080/policy/LV19-07-100000-1",
                         HttpMethod.PUT,
                         new HttpEntity<>(policy),
-                        String.class
+                        Policy.class
                 );
         assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals("Changed user", result.getBody().getUserName());
+        assertEquals(Double.valueOf(145.01), result.getBody().getPolicyPremium());
     }
 
     @Test
@@ -80,14 +83,22 @@ public class PolicyServiceTest {
     }
 
     @Test
+    public void getCurrentPolicy() {
+        final ResponseEntity<Policy> result = restTemplate
+                .getForEntity("http://localhost:8080/policy/LV19-07-100000-1", Policy.class);
+        assertNotNull(result.getBody());
+    }
+
+    @Test
     public void deleteCurrentPolicy() {
-        final ResponseEntity<String> result = restTemplate
+        final ResponseEntity<Policy> result = restTemplate
                 .exchange(
                         "http://localhost:8080/policy/LV19-07-100000-1",
                         HttpMethod.DELETE,
                         new HttpEntity<>(policy),
-                        String.class
+                        Policy.class
                 );
         assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNull(result.getBody());
     }
 }
