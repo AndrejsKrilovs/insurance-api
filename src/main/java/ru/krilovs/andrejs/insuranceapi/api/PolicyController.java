@@ -19,7 +19,7 @@ public class PolicyController {
     @Autowired
     private ValidationService validation;
 
-    private Double calculatePremium(final Policy policy) {
+    public Double calculatePremium(final Policy policy) {
         return policy.getPolicyObjects().stream()
                 .map(item -> item.getSubObjects())
                 .findAny()
