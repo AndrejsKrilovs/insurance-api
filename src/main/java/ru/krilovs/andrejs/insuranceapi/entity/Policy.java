@@ -2,6 +2,9 @@ package ru.krilovs.andrejs.insuranceapi.entity;
 
 import java.util.List;
 
+/**
+ * TODO: @svisotsky to @akrilovs Take a look at builder pattern
+ */
 public class Policy {
     private String userName;
     private String policyNumber;
