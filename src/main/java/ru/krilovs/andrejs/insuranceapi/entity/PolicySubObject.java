@@ -7,6 +7,7 @@ public class PolicySubObject {
     private String name;
     private RiskType riskType;
     private Double insuredSum;
+    private Double calculatedPremium;
 
     public String getName() {
         return name;
@@ -30,5 +31,13 @@ public class PolicySubObject {
 
     public void setInsuredSum(Double insuredSum) {
         this.insuredSum = insuredSum;
+    }
+
+    public Double getCalculatedPremium() {
+        return calculatedPremium;
+    }
+
+    public void setCalculatedPremium(Double calculatedPremium) {
+        this.calculatedPremium = calculatedPremium;
     }
 }

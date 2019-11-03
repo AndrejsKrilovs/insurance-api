@@ -1,5 +1,6 @@
 package ru.krilovs.andrejs.insuranceapi.entity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ public class Policy {
     private String policyNumber;
     private Status policyStatus;
     private List<PolicyObject> policyObjects;
-    private Double policyPremium;
+    private BigDecimal policyPremium;
 
     public String getUserName() {
         return userName;
@@ -44,11 +45,11 @@ public class Policy {
         this.policyObjects = policyObjects;
     }
 
-    public Double getPolicyPremium() {
+    public BigDecimal getPolicyPremium() {
         return policyPremium;
     }
 
-    public void setPolicyPremium(Double policyPremium) {
+    public void setPolicyPremium(BigDecimal policyPremium) {
         this.policyPremium = policyPremium;
     }
 }

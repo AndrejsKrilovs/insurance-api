@@ -7,6 +7,7 @@ import ru.krilovs.andrejs.insuranceapi.entity.PolicyObject;
 import ru.krilovs.andrejs.insuranceapi.entity.PolicySubObject;
 import ru.krilovs.andrejs.insuranceapi.entity.RiskType;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.DoubleStream;
@@ -45,7 +46,7 @@ public class PolicyServiceImpl implements PolicyService {
         DoubleStream values = subObjectList
                 .stream()
                 .peek(this::setPremiumCalculationWithCoefficient)
-                .map(PolicySubObject::getInsuredSum)
+                .map(PolicySubObject::getCalculatedPremium)
                 .mapToDouble(Double::doubleValue);
         return values.sum();
     }
@@ -56,8 +57,8 @@ public class PolicyServiceImpl implements PolicyService {
             policy.setPolicyNumber(policyNumber);
         }
 
-        if(premium != null && premium > 0 && !premium.equals(policy.getPolicyPremium())) {
-            policy.setPolicyPremium(premium);
+        if(premium != null && premium.doubleValue() > 0 && !premium.equals(policy.getPolicyPremium())) {
+            policy.setPolicyPremium(BigDecimal.valueOf(premium));
         }
 
         return policy;
@@ -65,19 +66,19 @@ public class PolicyServiceImpl implements PolicyService {
 
     private void setPremiumCalculationWithCoefficient(PolicySubObject policySubObject) {
         if(policySubObject.getRiskType().equals(RiskType.FIRE) && policySubObject.getInsuredSum() > 100) {
-            policySubObject.setInsuredSum(policySubObject.getInsuredSum() * 0.023);
+            policySubObject.setCalculatedPremium(policySubObject.getInsuredSum() * 0.023);
         }
 
         else if(policySubObject.getRiskType().equals(RiskType.FIRE) && policySubObject.getInsuredSum() <= 100) {
-            policySubObject.setInsuredSum(policySubObject.getInsuredSum() * 0.013);
+            policySubObject.setCalculatedPremium(policySubObject.getInsuredSum() * 0.013);
         }
 
         else if(policySubObject.getRiskType().equals(RiskType.WATER) && policySubObject.getInsuredSum() >= 10) {
-            policySubObject.setInsuredSum(policySubObject.getInsuredSum() * 0.05);
+            policySubObject.setCalculatedPremium(policySubObject.getInsuredSum() * 0.05);
         }
 
         else if(policySubObject.getRiskType().equals(RiskType.WATER) && policySubObject.getInsuredSum() < 10) {
-            policySubObject.setInsuredSum(policySubObject.getInsuredSum() * 0.1);
+            policySubObject.setCalculatedPremium(policySubObject.getInsuredSum() * 0.1);
         }
     }
 }
