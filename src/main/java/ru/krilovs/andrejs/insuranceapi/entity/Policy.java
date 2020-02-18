@@ -1,55 +1,19 @@
 package ru.krilovs.andrejs.insuranceapi.entity;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Set;
 
-/**
- * TODO: @svisotsky to @akrilovs Take a look at builder pattern
- */
+@Getter
+@Setter
+@EqualsAndHashCode(of = {"id"})
 public class Policy {
-    private String userName;
-    private String policyNumber;
-    private Status policyStatus;
-    private List<PolicyObject> policyObjects;
-    private BigDecimal policyPremium;
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getPolicyNumber() {
-        return policyNumber;
-    }
-
-    public void setPolicyNumber(String policyNumber) {
-        this.policyNumber = policyNumber;
-    }
-
-    public Status getPolicyStatus() {
-        return policyStatus;
-    }
-
-    public void setPolicyStatus(Status policyStatus) {
-        this.policyStatus = policyStatus;
-    }
-
-    public List<PolicyObject> getPolicyObjects() {
-        return policyObjects;
-    }
-
-    public void setPolicyObjects(List<PolicyObject> policyObjects) {
-        this.policyObjects = policyObjects;
-    }
-
-    public BigDecimal getPolicyPremium() {
-        return policyPremium;
-    }
-
-    public void setPolicyPremium(BigDecimal policyPremium) {
-        this.policyPremium = policyPremium;
-    }
+    private Long id;
+    private String name;
+    private BigDecimal premium;
+    private Status status;
+    private Set<PolicyObject> policyObjects;
 }
