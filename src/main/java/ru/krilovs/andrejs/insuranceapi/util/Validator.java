@@ -18,14 +18,18 @@ public class Validator {
     public static void validatePolicy(Policy policy) {
         Preconditions.checkNotNull(policy);
         Preconditions.checkArgument(!Strings.isNullOrEmpty(policy.getName()));
+        policy.getPolicyObjects().forEach(Validator::validatePolicyObject);
+        policy.getPolicyObjects().stream()
+                .flatMap(item -> item.getPolicySubObjects().stream())
+                .forEach(Validator::validatePolicySubObject);
     }
 
-    public static void validatePolicyObject(PolicyObject object) {
+    private static void validatePolicyObject(PolicyObject object) {
         Preconditions.checkNotNull(object);
         Preconditions.checkArgument(!Strings.isNullOrEmpty(object.getName()));
     }
 
-    public static void validatePolicySubObject(PolicySubObject subObject) {
+    private static void validatePolicySubObject(PolicySubObject subObject) {
         Preconditions.checkNotNull(subObject);
         Preconditions.checkArgument(!Strings.isNullOrEmpty(subObject.getName()));
         Preconditions.checkNotNull(subObject.getRiskType());

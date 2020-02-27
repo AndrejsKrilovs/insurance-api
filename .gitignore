@@ -1,4 +1,7 @@
 target/
+derby.log
+PolicyDB/
+
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**

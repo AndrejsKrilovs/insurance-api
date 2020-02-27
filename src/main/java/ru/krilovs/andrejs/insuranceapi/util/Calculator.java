@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import ru.krilovs.andrejs.insuranceapi.entity.Policy;
+import ru.krilovs.andrejs.insuranceapi.entity.PolicySubObject;
 
 import java.math.BigDecimal;
 
@@ -13,10 +14,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Calculator {
     public static BigDecimal calculatePremium(Policy policy) {
-        final double totalSum = policy.getPolicyObjects().stream()
+        return policy.getPolicyObjects().stream()
                 .flatMap(item -> item.getPolicySubObjects().stream())
-                .mapToDouble(item -> item.getInsuredAmount().doubleValue())
-                .sum();
-        return BigDecimal.valueOf(totalSum);
+                .map(PolicySubObject::getInsuredAmount)
+                .reduce(BigDecimal::add)
+                .orElse(BigDecimal.ZERO);
     }
 }

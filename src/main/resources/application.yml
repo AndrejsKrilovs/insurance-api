@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:derby:PolicyDB;create=true
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: off
